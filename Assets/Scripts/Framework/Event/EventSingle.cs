@@ -20,7 +20,7 @@ namespace Assets.Scripts.Framework.Event
         /// </summary>
         /// <param name="define">事件定义</param>
         /// <param name="action">准备用来处理事件的委托函数</param>
-        public void AddListener<T>(EventDefine define, UnityAction<T> action) where T : EventArgs
+        public void AddListener<T>(EventDefine define, Action<T> action) where T : IEventArgs
         {
             //判断字典里有没有对应这个事件，有就执行，没有就加进去。
             if (eventDic.ContainsKey(define))
@@ -33,17 +33,33 @@ namespace Assets.Scripts.Framework.Event
             }
         }
 
+        public void AddListener(EventDefine define, Action action)
+        {
+            // 将无参委托函数包装成带参数的委托函数
+            Action<IEventArgs> handler = (args) => action();
+            // 调用泛型 AddListener 方法
+            AddListener(define, handler);
+        }
+
         /// <summary>
         /// 移除事件监听者
         /// </summary>
         /// <param name="define">事件</param>
         /// <param name="action">委托函数</param>
-        public void RemoveListener<T>(EventDefine define, UnityAction<T> action) where T : EventArgs
+        public void RemoveListener<T>(EventDefine define, Action<T> action) where T : IEventArgs
         {
             if (eventDic.ContainsKey(define))
             {
                 eventDic[define] = Delegate.Remove(eventDic[define], action);
             }
+        }
+
+        public void RemoveListener(EventDefine define, Action action)
+        {
+            // 将无参委托函数包装成带参数的委托函数
+            Action<IEventArgs> handler = (args) => action();
+            // 调用泛型 AddListener 方法
+            RemoveListener(define, handler);
         }
 
         /// <summary>
@@ -58,11 +74,11 @@ namespace Assets.Scripts.Framework.Event
         /// 发送事件
         /// </summary>
         /// <param name="define">发送的事件定义</param>
-        public void SendEvent<T>(EventDefine define, T info = null) where T : EventArgs
+        public void SendEvent(EventDefine define, IEventArgs info = default)
         {
             if (eventDic.ContainsKey(define))
             {
-                var action = eventDic[define] as UnityAction<T>;
+                var action = eventDic[define] as Action<IEventArgs>;
                 if (action != null)
                 {
                     action.Invoke(info);

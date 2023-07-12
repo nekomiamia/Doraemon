@@ -9,7 +9,7 @@ namespace Assets.Scripts.Framework.Event
     /// <summary>
     /// 用来传递参数，可以用继承EventArgs的子类来事件传参
     /// </summary>
-    public class EventArgs
+    public interface IEventArgs
     {
     }
 }
